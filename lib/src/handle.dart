@@ -69,10 +69,13 @@ class _HandleState extends State<Handle> {
   bool get _isVertical => _list?.isVertical ?? true;
 
   Offset? _pointer;
-  late double _downOffset;
-  double? _startOffset;
-  double? _currentOffset;
-  double get _delta => (_currentOffset ?? 0) - (_startOffset ?? 0);
+  late Offset _downOffset;
+  Offset? _startOffset;
+  Offset? _currentOffset;
+
+  double get _delta =>
+      _offset(_currentOffset ?? const Offset(0, 0)) -
+      _offset(_startOffset ?? const Offset(0, 0));
 
   // Use flags from the list as this State object is being
   // recreated between dragged and normal state.
@@ -88,7 +91,7 @@ class _HandleState extends State<Handle> {
     // initiate a new reorder.
     if (_inReorder) return;
 
-    final moveDelta = (_downOffset - _currentOffset!).abs();
+    final moveDelta = (_downOffset - _currentOffset!).distance;
     if (moveDelta > 10.0) {
       return;
     }
@@ -156,8 +159,8 @@ class _HandleState extends State<Handle> {
 
   void _onDown(Offset pointer) {
     _pointer = pointer;
-    _currentOffset = _offset(_pointer);
-    _downOffset = _offset(_pointer);
+    _currentOffset = _pointer;
+    _downOffset = _pointer!;
 
     // Ensure the list is not already in a reordering
     // state when initiating a new reorder operation.
@@ -173,8 +176,7 @@ class _HandleState extends State<Handle> {
 
   void _onUpdate(Offset pointer) {
     _pointer = pointer;
-    _currentOffset = _offset(_pointer);
-
+    _currentOffset = _pointer;
     if (_inDrag && _inReorder) {
       _onDragUpdated(pointer);
     }
@@ -185,5 +187,5 @@ class _HandleState extends State<Handle> {
     if (_inDrag) _onDragEnded();
   }
 
-  double _offset(Offset? offset) => _isVertical ? offset!.dy : offset!.dx;
+  double _offset(Offset offset) => _isVertical ? offset.dy : offset.dx;
 }
